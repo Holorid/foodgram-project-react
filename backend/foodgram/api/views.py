@@ -37,8 +37,8 @@ class CustomUserViewSet(UserViewSet):
         user = request.user
         author = get_object_or_404(User, id=id)
         serializer = FollowSerializer(
-                data=request.data,
-                context={'request': request, 'author': author}
+            data=request.data,
+            context={'request': request, 'author': author}
         )
         if self.request.method == 'POST':
             serializer.is_valid(raise_exception=True)
@@ -118,8 +118,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk):
         serializer = FavoriteSerialize(
-           data=request.data,
-           context={'request': request, 'recipe_id': pk}
+            data=request.data,
+            context={'request': request, 'recipe_id': pk}
         )
         user = request.user
         serializer.is_valid(raise_exception=True)
@@ -139,8 +139,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         serializer = ListShoppingSerialize(
-           data=request.data,
-           context={'request': request, 'recipe_id': pk}
+            data=request.data,
+            context={'request': request, 'recipe_id': pk}
         )
         user = request.user
         serializer.is_valid(raise_exception=True)
