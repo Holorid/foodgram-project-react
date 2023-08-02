@@ -18,7 +18,7 @@ from recipes.models import (
     ListShopping,
     Favorite,
     IngredientRecipe
-    )
+)
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
