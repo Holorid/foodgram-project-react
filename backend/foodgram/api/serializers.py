@@ -1,12 +1,24 @@
 from django.shortcuts import get_object_or_404
+
 from rest_framework import serializers
+
 from djoser.serializers import UserSerializer
+
 import base64
+
 from django.core.files.base import ContentFile
 
 from users.models import User
-from recipes.models import (Tag, Ingredient, Subscribe, Recipe,
-                            ListShopping, Favorite, IngredientRecipe)
+
+from recipes.models import (
+    Tag,
+    Ingredient,
+    Subscribe,
+    Recipe,
+    ListShopping,
+    Favorite,
+    IngredientRecipe
+    )
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -25,9 +37,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
-        if user.is_anonymous:
-            return False
-        return Subscribe.objects.filter(user=user, author=obj).exists()
+        return (not user.is_anonymous
+                and Subscribe.objects.filter(user=user, author=obj).exists())
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -112,17 +123,15 @@ class FollowSerializer(serializers.ModelSerializer):
         return data
 
     def get_is_subscribed(self, obj):
-        following = Subscribe.objects.filter(user=obj.user,
-                                             author=obj.author).exists()
-        return following
+        return Subscribe.objects.filter(user=obj.user,
+                                        author=obj.author).exists()
 
     def get_recipes(self, obj):
-        queryset = Recipe.objects.filter(author=obj.author)
-        return RecipeSmallSerializer(queryset, many=True).data
+        return RecipeSmallSerializer(Recipe.objects.filter(author=obj.author),
+                                     many=True).data
 
     def get_recipes_count(self, obj):
-        count_resipes = obj.author.recipes.count()
-        return count_resipes
+        return obj.author.recipes.count()
 
 
 class GetIngredientRecipeSerializer(serializers.ModelSerializer):
@@ -232,15 +241,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         user = self.context['request'].user
-        if user.is_anonymous:
-            return False
-        return Favorite.objects.filter(user=user, recipe=obj).exists()
+        return (not user.is_anonymous
+                and Favorite.objects.filter(user=user, recipe=obj).exists())
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context['request'].user
-        if user.is_anonymous:
-            return False
-        return ListShopping.objects.filter(user=user, recipe=obj).exists()
+        return (not user.is_anonymous
+                and ListShopping.objects.filter(user=user,
+                                                recipe=obj).exists())
 
 
 class RecipeIngredientWriteSerializer(serializers.ModelSerializer):
@@ -282,6 +290,17 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         ingredients = data["ingredients"]
+        tags = data["tags"]
+        if not tags:
+            message = 'Нужен хотя бы один тег.'
+            raise serializers.ValidationError(message)
+        for tag in tags:
+            if not Tag.objects.filter(name=tag).exists():
+                message = 'Такого тега нет.'
+                raise serializers.ValidationError(message)
+        if not ingredients:
+            message = 'Нужен хотя бы один тег.'
+            raise serializers.ValidationError(message)
         ingredient_list = []
         for items in ingredients:
             ingredient = get_object_or_404(Ingredient,

@@ -1,31 +1,64 @@
 from django.shortcuts import get_object_or_404
+
 from rest_framework import mixins, status, viewsets
+
 from rest_framework.decorators import action
-from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly
+    )
 from rest_framework.response import Response
+
 from djoser.views import UserViewSet
+
 from rest_framework.pagination import PageNumberPagination
+
 from django.http import FileResponse
 
 from users.models import User
-from recipes.models import (Tag, Ingredient, Subscribe, Recipe, Favorite,
-                            ListShopping)
-from .serializers import (TagSerializer, IngredientSerializer,
-                          FollowSerializer, RecipeSerializer,
-                          CustomUserSerializer, RecipeWriteSerializer,
-                          FavoriteSerialize, ListShoppingSerialize)
+
+from recipes.models import (
+    Tag,
+    Ingredient,
+    Subscribe,
+    Recipe,
+    Favorite,
+    ListShopping
+    )
+
+from .serializers import (
+    TagSerializer,
+    IngredientSerializer,
+    FollowSerializer,
+    RecipeSerializer,
+    CustomUserSerializer,
+    RecipeWriteSerializer,
+    FavoriteSerialize,
+    ListShoppingSerialize
+    )
+
 from .filters import IngredientFilter, RecipeFilter
+
 from .permissions import IsAuthotOrAuthenticatedOrReadOnly
 
 from django.db.models import Sum
+
 from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework.filters import SearchFilter
+
+
+class ListRetrieveGenericModelViewSet(mixins.ListModelMixin,
+                                      mixins.RetrieveModelMixin,
+                                      viewsets.GenericViewSet):
+    pass
 
 
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     pagination_class = PageNumberPagination
 
     @action(
@@ -55,10 +88,6 @@ class CustomUserViewSet(UserViewSet):
         methods=['GET']
     )
     def subscriptions(self, request):
-        # тут тоже нашел пример на стаковерфлоу использования
-        # paginate_queryset и get_paginated_response.
-        # На сколько правильно сделал хз.
-        # обычно пагинацию не так указывали.
         queryset = Subscribe.objects.filter(user=request.user).order_by('id')
         page = self.paginate_queryset(queryset)
         serializer = FollowSerializer(
@@ -68,22 +97,18 @@ class CustomUserViewSet(UserViewSet):
         return self.get_paginated_response(serializer.data)
 
 
-class TagViewSet(mixins.ListModelMixin,
-                 mixins.RetrieveModelMixin,
-                 viewsets.GenericViewSet):
+class TagViewSet(ListRetrieveGenericModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
 
-class IngredientViewSet(mixins.ListModelMixin,
-                        mixins.RetrieveModelMixin,
-                        viewsets.GenericViewSet):
+class IngredientViewSet(ListRetrieveGenericModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_class = IngredientFilter
 
@@ -91,16 +116,17 @@ class IngredientViewSet(mixins.ListModelMixin,
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = [IsAuthotOrAuthenticatedOrReadOnly]
+    permission_classes = (IsAuthotOrAuthenticatedOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    # тут что-то не могу разобраться. на вебинаре просто показали код и все
-    # вроде все правильно указываю, но выдает ошибку,
-    # что recipe_ingredients__ingredient не существует.
+    # Все ровно ошибку выдает.
+    # AttributeError: Cannot find 'recipe' on Recipe object,
+    # 'recipe__ingredients__ingredient' is an invalid
+    # parameter to prefetch_related()
     # def get_queryset(self):
     #     recipes = Recipe.objects.prefetch_related(
-    #         'recipe_ingredients__ingredient', 'tags'
+    #         'recipe__ingredients__ingredient', 'tags'
     #     ).all()
     #     return recipes
 
@@ -169,9 +195,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .annotate(amount=Sum("recipe__ingredientrecipe__amount"))
         )
 
-        # Этот код написал из примера, который нашел на стаковерфлоу
-        # не знаю на сколько правильно сделал, первый раз сталкиваюсь
-        # с таким.
         data = {}
         for ingredient in instance:
             if ingredient['recipe__ingredients__name'] in data:
