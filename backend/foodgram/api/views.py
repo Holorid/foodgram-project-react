@@ -8,7 +8,8 @@ from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
     IsAuthenticatedOrReadOnly
-    )
+)
+
 from rest_framework.response import Response
 
 from djoser.views import UserViewSet
@@ -26,7 +27,7 @@ from recipes.models import (
     Recipe,
     Favorite,
     ListShopping
-    )
+)
 
 from .serializers import (
     TagSerializer,
@@ -37,7 +38,7 @@ from .serializers import (
     RecipeWriteSerializer,
     FavoriteSerialize,
     ListShoppingSerialize
-    )
+)
 
 from .filters import IngredientFilter, RecipeFilter
 

@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator
-    )
+)
 
 from django.db import models
 
@@ -86,10 +86,13 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления в минутах',
-        validators=(MinValueValidator(
-            1, message='Минимальное время должно быть больше 0'),
-                    MaxValueValidator(
-            48, message='Максимальное время не должно быть больше 48')
+        validators=(
+            MinValueValidator(
+                1,
+                message='Минимальное время должно быть больше 0'),
+            MaxValueValidator(
+                48,
+                message='Максимальное время не должно быть больше 48')
         )
     )
 
@@ -114,10 +117,13 @@ class IngredientRecipe(models.Model):
     )
     amount = models.PositiveSmallIntegerField(
         'Количество',
-        validators=(MinValueValidator(
-            1, message='Минимальное количество должно быть больше 0'),
-                    MaxValueValidator(
-            999, message='Максимальное количество не должно быть больше 999')
+        validators=(
+            MinValueValidator(
+                1,
+                message='Минимальное количество должно быть больше 0'),
+            MaxValueValidator(
+                999,
+                message='Максимальное количество не должно быть больше 999')
         )
     )
 

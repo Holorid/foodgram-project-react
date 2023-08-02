@@ -8,7 +8,7 @@ from .models import (
     Subscribe,
     Favorite,
     ListShopping
-    )
+)
 
 
 class RecipeIngredientInline(admin.TabularInline):
