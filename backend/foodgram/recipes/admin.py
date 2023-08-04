@@ -12,7 +12,11 @@ from .models import (
     ListShopping
 )
 
-from .filters import NameFilter
+from .filters import (
+    NameFilter,
+    RecipeFilter,
+    TagFilter
+)
 
 
 class RecipeIngredientInline(admin.TabularInline):
@@ -55,7 +59,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = ('id', 'short_name', 'author', 'count_favorites')
     inlines = (RecipeIngredientInline, )
     search_fields = ('username', 'email', 'first_name', 'last_name',)
-    list_filter = ('author', NameFilter, 'tags',)
+    list_filter = ('author', NameFilter, TagFilter,)
     ordering = ('name',)
     empty_value_display = '-пусто-'
 
@@ -71,7 +75,7 @@ class RecipeAdmin(admin.ModelAdmin):
 class IngredientRecipeAdmin(admin.ModelAdmin):
     list_display = ('id', 'recipe', 'ingredient', 'amount')
     search_fields = ('recipe', 'ingredient',)
-    list_filter = ('recipe', 'ingredient',)
+    list_filter = (RecipeFilter, 'ingredient',)
     empty_value_display = '-пусто-'
 
 
@@ -89,14 +93,14 @@ class SubscribeAdmin(admin.ModelAdmin):
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'recipe')
     search_fields = ('user', 'recipe',)
-    list_filter = ('user', 'recipe',)
+    list_filter = ('user', RecipeFilter,)
     empty_value_display = '-пусто-'
 
 
 class ListShoppingAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'recipe')
     search_fields = ('user', 'recipe',)
-    list_filter = ('user', 'recipe',)
+    list_filter = ('user', RecipeFilter,)
     empty_value_display = '-пусто-'
 
 
