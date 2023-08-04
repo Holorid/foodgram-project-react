@@ -13,7 +13,6 @@ User = get_user_model()
 
 CHAR_MAX_L = 200
 SLUG_MAX_L = 60
-STR_MAX_L = 15
 
 
 class Tag(models.Model):
@@ -25,6 +24,7 @@ class Tag(models.Model):
     color = ColorField(
         'Цветовой HEX-код',
         default='#FF0000',
+        unique=True,
     )
     slug = models.SlugField(
         'Слаг тега',
@@ -37,7 +37,7 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'
 
     def __str__(self):
-        return self.name[:STR_MAX_L]
+        return self.name
 
 
 class Ingredient(models.Model):
@@ -55,7 +55,7 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
-        return self.name[:STR_MAX_L]
+        return self.name
 
 
 class Recipe(models.Model):
@@ -91,17 +91,18 @@ class Recipe(models.Model):
                 1,
                 message='Минимальное время должно быть больше 0'),
             MaxValueValidator(
-                48,
-                message='Максимальное время не должно быть больше 48')
+                128,
+                message='Максимальное время не должно быть больше 128')
         )
     )
 
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+        ordering = ("-id",)
 
     def __str__(self):
-        return self.name[:STR_MAX_L]
+        return self.name
 
 
 class IngredientRecipe(models.Model):
@@ -138,7 +139,7 @@ class IngredientRecipe(models.Model):
         )
 
     def __str__(self):
-        return f'{self.amount}'[:STR_MAX_L]
+        return f'{self.amount}'
 
 
 class Subscribe(models.Model):

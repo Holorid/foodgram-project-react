@@ -1,5 +1,7 @@
 from django.contrib import admin
 
+from django.core.exceptions import ValidationError
+
 from .models import (
     Tag,
     Ingredient,
@@ -10,38 +12,60 @@ from .models import (
     ListShopping
 )
 
+from .filters import NameFilter
+
 
 class RecipeIngredientInline(admin.TabularInline):
     model = IngredientRecipe
     extra = 1
+    min_num = 1
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'color', 'slug')
+    list_display = ('id', 'short_name', 'color', 'slug')
     search_fields = ('name', 'color', 'slug')
-    list_filter = ('name', 'color', 'slug',)
+    list_filter = (
+        NameFilter,
+        'color',
+        'slug',
+    )
     ordering = ('name',)
     empty_value_display = '-пусто-'
 
+    def short_name(self, obj):
+        return obj.name[:15]
+
+    short_name.short_description = 'name'
+
 
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'measurement_unit')
+    list_display = ('id', 'short_name', 'measurement_unit')
     search_fields = ('name', 'measurement_unit')
     list_filter = ('name',)
     ordering = ('id',)
     empty_value_display = '-пусто-'
 
+    def short_name(self, obj):
+        return obj.name[:15]
+
+    short_name.short_description = 'name'
+
 
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'author', 'count_favorites')
+    list_display = ('id', 'short_name', 'author', 'count_favorites')
     inlines = (RecipeIngredientInline, )
     search_fields = ('username', 'email', 'first_name', 'last_name',)
-    list_filter = ('author', 'name', 'tags',)
+    list_filter = ('author', NameFilter, 'tags',)
     ordering = ('name',)
     empty_value_display = '-пусто-'
 
     def count_favorites(self, obj):
         return obj.recipes_favorite_recipe.count()
+
+    def short_name(self, obj):
+        return obj.name[:15]
+
+    short_name.short_description = 'name'
 
 
 class IngredientRecipeAdmin(admin.ModelAdmin):
@@ -56,6 +80,10 @@ class SubscribeAdmin(admin.ModelAdmin):
     search_fields = ('user', 'author',)
     list_filter = ('user', 'author',)
     empty_value_display = '-пусто-'
+
+    def save_model(self, request, obj, form, change):
+        if obj.user == obj.author:
+            raise ValidationError("Нельзя подписаться на самого себя.")
 
 
 class FavoriteAdmin(admin.ModelAdmin):

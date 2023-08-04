@@ -299,7 +299,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 message = 'Такого тега нет.'
                 raise serializers.ValidationError(message)
         if not ingredients:
-            message = 'Нужен хотя бы один тег.'
+            message = 'Нужен хотя бы один ингредиент.'
             raise serializers.ValidationError(message)
         ingredient_list = []
         for items in ingredients:

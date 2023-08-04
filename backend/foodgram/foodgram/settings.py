@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'test')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['foodgrampract.hopto.org']
+ALLOWED_HOSTS = ['127.0.0.1', 'foodgrampract.hopto.org']
 
 
 # Application definition
@@ -118,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
