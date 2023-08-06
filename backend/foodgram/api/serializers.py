@@ -75,6 +75,7 @@ class Base64ImageField(serializers.ImageField):
 
 class RecipeSmallSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
+    name = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -84,6 +85,10 @@ class RecipeSmallSerializer(serializers.ModelSerializer):
             'image',
             'cooking_time'
         )
+
+    def get_name(self, obj):
+        name = obj.name
+        return name[:15]
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -128,10 +133,10 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        recipes_limit = int(request.GET.get('recipes_limit'))
+        recipes_limit = request.GET.get('recipes_limit')
         recipe = Recipe.objects.filter(author=obj.author)
         if recipes_limit:
-            recipe = recipe[:recipes_limit]
+            recipe = recipe[:int(recipes_limit)]
         return RecipeSmallSerializer(recipe, many=True).data
 
     def get_recipes_count(self, obj):
@@ -224,6 +229,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     )
     author = UserSerializer()
     tags = TagSerializer(many=True)
+    name = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -242,6 +248,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             'image'
         )
         read_only_fields = ('author',)
+
+    def get_name(self, obj):
+        name = obj.name
+        return name[:15]
 
     def get_is_favorited(self, obj):
         user = self.context['request'].user
