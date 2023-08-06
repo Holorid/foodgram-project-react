@@ -127,8 +127,12 @@ class FollowSerializer(serializers.ModelSerializer):
                                         author=obj.author).exists()
 
     def get_recipes(self, obj):
-        return RecipeSmallSerializer(Recipe.objects.filter(author=obj.author),
-                                     many=True).data
+        request = self.context.get('request')
+        recipes_limit = int(request.GET.get('recipes_limit'))
+        recipe = Recipe.objects.filter(author=obj.author)
+        if recipes_limit:
+            recipe = recipe[:recipes_limit]
+        return RecipeSmallSerializer(recipe, many=True).data
 
     def get_recipes_count(self, obj):
         return obj.author.recipes.count()

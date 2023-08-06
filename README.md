@@ -11,49 +11,58 @@
 -   JS
 -   Nginx
 -   Gunicron
+-   Docker
 
 ## Запуск проекта
-1. Клонирование репозитория
+1. Соберите контейнеры:
 ```
-git clone git@github.com:Holorid/foodgram-project-react.git
+docker-compose up -d
 ```
-
-Откройте терминал проекта, клонированного ранее
-
-2. Развертывание в репозитории виртуального окружения
+2. Выполните миграции:
 ```
-Windows:
-python -m venv venv
-
-MacOS/Linux:
-python3 -m venv venv
+docker-compose exec backend python manage.py makemigrations
+docker-compose exec backend python manage.py migrate
 ```
-3. Запуск виртуального окружения
+3. Соберите и скопируйте статику:
 ```
-Windows:
-source venv/Scripts/activate
-
-MacOS/Linux:
-source venv/bin/activate
-
-```
-4. Установка зависимостей в виртуальном окружении
-```
-pip install -r requirements.txt
+sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
 ```
 
-5. Выполнение миграций
+## Создать юзера для админки:
 ```
-python manage.py migrate
-```
-
-6. Запуск проекта
-```
-python manage.py runserver
+docker compose exec backend python manage.py createsuperuser
 ```
 
-7. Установка зависимости для фронтенд-приложения
+## Импортировать данные из фикстур в БД:
 ```
-cd ./frontend/
-npm i
+docker compose exec backend python manage.py load_ingredients
 ```
+
+## Примеры:
+Запрос: GET: http://127.0.0.1:8000/api/users/
+Ответ:
+```
+{
+  "count": 123,
+  "next": "http://127.0.0.1:8000/api/users/?page=3",
+  "previous": "http://127.0.0.1:8000/api/users/?page=1",
+  "results": [
+    {
+      "email": "user@bb.ru",
+      "id": 0,
+      "username": "user",
+      "first_name": "User",
+      "last_name": "User",
+      "is_subscribed": false
+    }
+  ]
+}
+```
+
+## Документация к API:
+```
+http://127.0.0.1/api/docs/
+```
+
+Автор: [Holorid](https://github.com/Holorid/)

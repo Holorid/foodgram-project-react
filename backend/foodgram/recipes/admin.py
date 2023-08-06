@@ -1,7 +1,5 @@
 from django.contrib import admin
 
-from django.core.exceptions import ValidationError
-
 from .models import (
     Tag,
     Ingredient,
@@ -18,11 +16,26 @@ from .filters import (
     TagFilter
 )
 
+from django import forms
+
+
+class RecipeIngredientFormSet(forms.models.BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        count = 0
+        for form in self.forms:
+            if (form.cleaned_data
+               and not form.cleaned_data.get('DELETE', False)):
+                count += 1
+        if count < 1:
+            raise forms.ValidationError('Должен быть хотя бы один ингредиент.')
+
 
 class RecipeIngredientInline(admin.TabularInline):
     model = IngredientRecipe
-    extra = 1
+    extra = 0
     min_num = 1
+    formset = RecipeIngredientFormSet
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -87,7 +100,7 @@ class SubscribeAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if obj.user == obj.author:
-            raise ValidationError("Нельзя подписаться на самого себя.")
+            raise forms.ValidationError("Нельзя подписаться на самого себя.")
 
 
 class FavoriteAdmin(admin.ModelAdmin):
