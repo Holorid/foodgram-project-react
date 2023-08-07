@@ -11,6 +11,8 @@ from colorfield.fields import ColorField
 
 from colorfield.validators import color_hex_validator
 
+from django.forms import ValidationError
+
 User = get_user_model()
 
 CHAR_MAX_L = 200
@@ -27,7 +29,7 @@ class Tag(models.Model):
         'Цветовой HEX-код',
         default='#FF0000',
         unique=True,
-        validators=[color_hex_validator]
+        validators=(color_hex_validator,)
     )
     slug = models.SlugField(
         'Слаг тега',
@@ -41,6 +43,15 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.color = self.color.upper()
+
+        if Tag.objects.filter(color=self.color).exists():
+            message = 'Тег с таким цветом уже существует.'
+            raise ValidationError(message)
+
+        super(Tag, self).save(*args, **kwargs)
 
 
 class Ingredient(models.Model):
